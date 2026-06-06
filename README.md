@@ -84,7 +84,7 @@ docushield/
 ## 👤 Team
 
 **Team Sun Rises**  
-- **Sunkaraboina Aravind** — sunkaraboinaaravind123@gmail.com  
+- **Sunkaraboina Aravind** — sunkaraboinaaravind****@gmail.com  
 - Institute of Aeronautical Engineering
 
 ---
