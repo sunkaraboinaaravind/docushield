@@ -32,8 +32,11 @@ COPY backend/ ./backend/
 # Copy built React frontend from Stage 1
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
+# Set workdir to backend so Python finds analyzer.py
+WORKDIR /app/backend
+
 # HuggingFace Spaces uses port 7860
 EXPOSE 7860
 
 # Run FastAPI (serves both API + frontend)
-CMD ["python", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
