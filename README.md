@@ -2,7 +2,7 @@
 title: DocuShield
 emoji: 🛡️
 colorFrom: blue
-colorTo: cyan
+colorTo: purple
 sdk: docker
 pinned: false
 license: mit
