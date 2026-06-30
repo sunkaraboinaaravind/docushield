@@ -1,10 +1,15 @@
 import os
 import io
 import time
+from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from analyzer import analyze_document
+
+# Path to the built React frontend (../frontend/dist)
+FRONTEND_DIST = Path(__file__).parent.parent / "frontend" / "dist"
 
 app = FastAPI(
     title="DocuShield API",
@@ -12,7 +17,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow React frontend on any localhost port
+# CORS (kept for dev flexibility)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,6 +25,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve React static assets (JS, CSS, images) from /assets
+if FRONTEND_DIST.exists():
+    app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST / "assets")), name="assets")
 
 ALLOWED_TYPES = {
     "image/jpeg", "image/jpg", "image/png",
@@ -71,6 +80,20 @@ async def analyze(file: UploadFile = File(...)):
     result["processing_time_ms"] = elapsed_ms
 
     return JSONResponse(content=result)
+
+
+# ── SPA Fallback ────────────────────────────────────────────────
+# Serve index.html for all non-API routes (React Router support)
+@app.get("/")
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str = ""):
+    index = FRONTEND_DIST / "index.html"
+    if FRONTEND_DIST.exists() and index.exists():
+        return FileResponse(str(index))
+    return JSONResponse(
+        {"message": "DocuShield API running. Frontend not built yet — run: cd frontend && npm run build"},
+        status_code=200
+    )
 
 
 def pdf_to_image(pdf_bytes: bytes) -> bytes:

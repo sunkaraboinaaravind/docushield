@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = ''; // Empty = same origin (works when FastAPI serves the frontend)
 
 // ── Navbar ──────────────────────────────────────────────────────
 function Navbar() {

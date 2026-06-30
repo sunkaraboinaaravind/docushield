@@ -6,6 +6,23 @@ import random
 from PIL import Image, ImageChops, ImageEnhance, ImageFilter, ImageDraw
 import numpy as np
 
+
+def sanitize_json(obj):
+    """Recursively convert numpy types to native Python types for JSON serialization."""
+    if isinstance(obj, dict):
+        return {k: sanitize_json(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize_json(i) for i in obj]
+    elif isinstance(obj, (np.float32, np.float64, np.floating)):
+        return float(obj)
+    elif isinstance(obj, (np.int32, np.int64, np.integer)):
+        return int(obj)
+    elif isinstance(obj, np.bool_):
+        return bool(obj)
+    elif isinstance(obj, np.ndarray):
+        return sanitize_json(obj.tolist())
+    return obj
+
 def perform_ela(image_bytes: bytes, quality: int = 85) -> tuple[Image.Image, float]:
     """
     Error Level Analysis: detect re-saved / edited regions.
@@ -211,7 +228,7 @@ def analyze_document(image_bytes: bytes, filename: str) -> dict:
         "HIGH": "High probability of document tampering. Escalate for detailed forensic investigation."
     }
 
-    return {
+    result = {
         "document_id": doc_id,
         "filename": filename,
         "authenticity_score": authenticity,
@@ -224,3 +241,5 @@ def analyze_document(image_bytes: bytes, filename: str) -> dict:
         },
         "heatmap_base64": heatmap_b64
     }
+    # Sanitize all numpy types before JSON serialization
+    return sanitize_json(result)
